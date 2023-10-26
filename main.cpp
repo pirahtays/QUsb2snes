@@ -27,6 +27,8 @@
   #include "ui/appui.h"
 #else
   #include <QCoreApplication>
+  #include <QCommandLineParser>
+  #include <QCommandLineOption>
 #endif
 
 #include <QTimer>
@@ -289,10 +291,45 @@ int main(int ac, char *ag[])
         appUi->updated(app.arguments().at(updatedIndex + 1));
     appUi->sysTray->show();
 #else
-   if (app.arguments().contains("--version"))
+   QCommandLineParser parser;
+   parser.setApplicationDescription("QUsb2Snes");
+   parser.addHelpOption();
+   //parser.addVersionOption();
+
+   QCommandLineOption showVersionInfo(QStringList() << "v" << "version", 
+                                      QCoreApplication::translate("main", "Print version info and exit"));
+   parser.addOption(showVersionInfo);
+
+   QCommandLineOption alternatePort(QStringList() << "p" << "port", 
+                                    QCoreApplication::translate("main", "Alternate port to use (Default: 8080)"), 
+                                    "8080");
+   parser.addOption(alternatePort);
+
+   QCommandLineOption retroArchHostOption(QStringList()  << "retroarchhost", 
+                                    QCoreApplication::translate("main", "Retroarch Host (Default: 127.0.0.1:55355)"), 
+                                    "127.0.0.1:55355");
+   parser.addOption(retroArchHostOption);
+
+   parser.process(app);
+
+   //qDebug() << parser.values(showVersionInfo);
+   //qDebug() << parser.value(alternatePort);
+
+
+   //if (app.arguments().contains("--version"))
+   if (parser.isSet(showVersionInfo))
    {
         fprintf(stdout, "QUsb2Snes version : %s\n", app.applicationVersion().toLocal8Bit().constData());
         return 0;
+   }
+   if (parser.isSet(retroArchHostOption))
+   {
+        globalSettings->setValue("RetroArchHost", parser.value(retroArchHostOption));
+   }
+   if (parser.isSet(alternatePort))
+   {
+        //qDebug() << parser.value(alternatePort);
+        globalSettings->setValue("port", parser.value(alternatePort));
    }
    if (globalSettings->value("sd2snessupport").toBool() || app.arguments().contains("-sd2snes"))
    {

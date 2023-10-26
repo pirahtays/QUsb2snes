@@ -72,8 +72,17 @@ RetroArchFactory::RetroArchFactory()
             globalSettings->remove("RetroArchHost");
         } else {
             RetroArchHost* old = new RetroArchHost(oldEntry);
-            QHostInfo::lookupHost(oldEntry, this, [old](QHostInfo hinfo){
-                old->setHostAddress(hinfo.addresses().at(0));
+            QHostInfo::lookupHost(oldEntry, this, [old, oldEntry](QHostInfo hinfo)
+            {
+                if(oldEntry.contains(':'))
+                {
+                    QStringList hostInfo = oldEntry.split(':');
+                    old->setHostAddress(hinfo.addresses().at(0), hostInfo.at(1).toUInt());
+                }
+                else 
+                {
+                    old->setHostAddress(hinfo.addresses().at(0));
+                }
             });
            addHost(old);
         }
