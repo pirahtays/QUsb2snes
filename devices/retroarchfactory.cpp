@@ -73,8 +73,10 @@ RetroArchFactory::RetroArchFactory()
         }
         else
         {
-            RetroArchHost *old = new RetroArchHost(oldEntry);
-            QStringList host = oldEntry.split(':');
+            qDebug() << "RetroArchHost: " << oldEntry;
+            QStringList raHost = oldEntry.split('=');
+            RetroArchHost *old = new RetroArchHost(raHost.at(0));
+            QStringList host = raHost.at(1).split(':');
             QHostInfo::lookupHost(host.at(0), this, [old, host](QHostInfo hinfo)
             {
                 if (host.length() > 1)

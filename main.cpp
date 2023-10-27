@@ -316,8 +316,9 @@ int main(int ac, char *ag[])
     parser.addOption(alternatePort);
 
     QCommandLineOption retroArchHostOption(QStringList() << "retroarchhost",
-                                           QCoreApplication::translate("main", "Retroarch Host (Default: 127.0.0.1:55355)"),
-                                           "retroarchhost");
+                                           QCoreApplication::translate("main", "Retroarch Host (Default: localhost=127.0.0.1:55355)"),
+                                           "retroarchhost",
+                                           "localhost=127.0.0.1:55535");
     parser.addOption(retroArchHostOption);
 
     QCommandLineOption sd2SnesEnable(QStringList() << "sd2snes",
