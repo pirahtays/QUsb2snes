@@ -47,6 +47,7 @@ WSServer::WSServer(QObject *parent) : QObject(parent)
     i = mo2.indexOfEnumerator("server_flags");
     flagsMetaEnum = mo2.enumerator(i);
     trustedOrigin.append("http://localhost");
+    trustedOrigin.append("http://127.0.0.1");
     trustedOrigin.append("");
     numberOfAsyncFactory = 0;
 }

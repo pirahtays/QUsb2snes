@@ -208,6 +208,22 @@ void startServer()
     }
 }
 
+void addTrustedHosts(const QString &hosts)
+{
+    //qDebug() << "TrustedHosts[CLI]: " << hosts;
+    // QString configHosts = globalSettings->value("TrustedHosts").toString();
+    // qDebug() << "TrustedHosts[Config]: " << configHosts;
+    
+    QStringList hostList = hosts.split(';');
+    // hostList.append(configHosts.split(';'));
+
+    foreach (QString host, hostList)
+    {
+        //qDebug() << host;
+        wsServer.addTrusted(host);
+    }
+}
+
 #include <signal.h>
 
 int main(int ac, char *ag[])
@@ -251,14 +267,12 @@ int main(int ac, char *ag[])
     qInfo() << "Runing QUsb2Snes version " << qApp->applicationVersion();
     qInfo() << "Compiled against Qt" << QT_VERSION_STR << ", running" << qVersion();
     // let set some know trusted domain
-    wsServer.addTrusted("http://localhost");
-    wsServer.addTrusted("http://127.0.0.1");
-    wsServer.addTrusted("http://www.multitroid.com");
-    wsServer.addTrusted("http://multitroid.com");
-    wsServer.addTrusted("https://multiworld.samus.link/");
-    wsServer.addTrusted("http://usb2snes.com");
-    wsServer.addTrusted("https://samus.link");
-    wsServer.addTrusted("https://funtoon.party");
+    // wsServer.addTrusted("http://www.multitroid.com");
+    // wsServer.addTrusted("http://multitroid.com");
+    // wsServer.addTrusted("https://multiworld.samus.link/");
+    // wsServer.addTrusted("http://usb2snes.com");
+    // wsServer.addTrusted("https://samus.link");
+    // wsServer.addTrusted("https://funtoon.party");
     QLoggingCategory::setFilterRules("EmuNWAccessClient.debug=true\n");
 
 #ifndef QUSB2SNES_NOGUI
@@ -279,6 +293,12 @@ int main(int ac, char *ag[])
                                   "config",
                                   "QUsb2Snes");
     parser.addOption(configFile);
+
+    QCommandLineOption trustedHosts(QStringList() << "trustedhosts",
+                                  QCoreApplication::translate("main", "Add trusted URLs to accept requests from (Default: 'http://www.multitroid.com; http://multitroid.com; https://multiworld.samus.link/; http://usb2snes.com; https://samus.link; https://funtoon.party')"),
+                                  "config",
+                                  "http://www.multitroid.com;http://multitroid.com;https://multiworld.samus.link/;http://usb2snes.com;https://samus.link;https://funtoon.party");
+    parser.addOption(trustedHosts);
 
     QCommandLineOption debugEnable(QStringList() << "debug",
                                    QCoreApplication::translate("main", "Activate debug log."));
@@ -317,6 +337,8 @@ int main(int ac, char *ag[])
     parser.addOption(snesClassicEnable);
 
     parser.process(app);
+    QString hosts = parser.value(trustedHosts);
+    addTrustedHosts(hosts);
 
     // std::filebuf crashFile;
 #ifndef Q_OS_WIN
