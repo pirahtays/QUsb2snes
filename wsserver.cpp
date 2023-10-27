@@ -74,7 +74,7 @@ void WSServer::onNewConnection()
     sInfo() << "New connection from " << newSocket->origin();
     if (!trustedOrigin.contains(newSocket->origin()))
     {
-        sInfo() << "Connection from untrusted origin";
+        sInfo() << "Connection from untrusted origin ( " << newSocket->origin() <<" )" ;
         emit untrustedConnection(newSocket->origin());
         sInfo() << "Closing Connection";
         newSocket->close(QWebSocketProtocol::CloseCodePolicyViolated, "Not in trusted origin");
@@ -144,6 +144,7 @@ void WSServer::addDeviceFactory(DeviceFactory *devFact)
         connect(devFact, &DeviceFactory::devicesListDone, this, &WSServer::onDeviceListDone);
     }
     deviceFactories.append(devFact);
+    sDebug() << "Adding Device Factory " << devFact->name() << "[Completed]";
 }
 
 QStringList WSServer::deviceFactoryNames() const

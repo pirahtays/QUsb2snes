@@ -18,17 +18,16 @@
  * along with QUsb2Snes.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #include <QDebug>
 
 #ifndef QUSB2SNES_NOGUI
-  #include <QApplication>
-  #include <QMessageBox>
-  #include "ui/appui.h"
+#include <QApplication>
+#include <QMessageBox>
+#include "ui/appui.h"
 #else
-  #include <QCoreApplication>
-  #include <QCommandLineParser>
-  #include <QCommandLineOption>
+#include <QCoreApplication>
+#include <QCommandLineParser>
+#include <QCommandLineOption>
 #endif
 
 #include <QTimer>
@@ -46,7 +45,6 @@
 #include "osx/appnap.h"
 #endif
 
-
 #include "qskarsnikringlist.hpp"
 #include "wsserver.h"
 #include "devices/sd2snesfactory.h"
@@ -55,11 +53,10 @@
 #include "devices/snesclassicfactory.h"
 #include "devices/emunetworkaccessfactory.h"
 
-std::ostream* stdLogStream = nullptr;
+std::ostream *stdLogStream = nullptr;
 
-WSServer    wsServer;
-QSettings*  globalSettings;
-
+WSServer wsServer;
+QSettings *globalSettings;
 
 /*
 #include "backward.hpp"
@@ -71,8 +68,7 @@ backward::SignalHandling sh;
 
 static QTextStream logfile;
 static QTextStream debugLogFile;
-//static QTextStream lowlogfile;
-
+// static QTextStream lowlogfile;
 
 // QUSB2SNES_DEVEL is used for special stuff needed when working on qusb code
 // For example it enable outputing all the logs entry on cout also so you see them in
@@ -91,7 +87,6 @@ static QTextStream cout(stdout);
 #endif
 
 static QSkarsnikRingList<QString> logDebugCrash(500);
-
 
 static void onCrash()
 {
@@ -115,23 +110,22 @@ static void seg_handler(int sig)
     onCrash();
 }
 
-
 // Set this to true if you expect lot of flood message
 // It's used for example on the snes classic device that check stuff on a timer
 // and only the relevant information is logged but not the whole snes classic message exchange
-bool    dontLogNext = false;
+bool dontLogNext = false;
 
 const unsigned int MAX_LINE_LOG = 2000;
-QFile*  refToLogFile;
+QFile *refToLogFile;
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    static QString  logBuffer;
-    static quint32  logCounter = 0;
+    static QString logBuffer;
+    static quint32 logCounter = 0;
     QByteArray localMsg = msg.toLocal8Bit();
-    QTextStream*    log = &logfile;
-    //QTextStream* log = new QTextStream();
-    //cout << msg;
+    QTextStream *log = &logfile;
+    // QTextStream* log = new QTextStream();
+    // cout << msg;
 //    if (dontLogNext)
 //        return ;
 #ifdef QT_NO_DEBUG
@@ -141,35 +135,36 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 #endif
     switch (type)
     {
-        case QtDebugMsg:
-            logDebugCrash.append(logString.arg("Debug"));
-            break;
-        case QtCriticalMsg:
-            logDebugCrash.append(logString.arg("Critical"));
-            *log << logString.arg("Critical");
-            logBuffer.append(logString.arg("Critical"));
-            break;
-        case QtWarningMsg:
-            logDebugCrash.append(logString.arg("Warning"));
-            *log << logString.arg("Warning");
-            logBuffer.append(logString.arg("Warning"));
-            break;
-        case QtFatalMsg:
-            logDebugCrash.append(logString.arg("Fatal"));
-            *log << logString.arg("Fatal");
-            *log << "\n"; log->flush();
-            #ifndef QUSB2SNES_NOGUI
-            QMessageBox::critical(nullptr, QObject::tr("Critical error"), msg);
-            #else
-            fprintf(stderr, "Critical error :%s\n", msg.toLatin1().constData());
-            #endif
-            qApp->exit(1);
-            break;
-        case QtInfoMsg:
-            logDebugCrash.append(logString.arg("Info"));
-            *log << logString.arg("Info");
-            logBuffer.append(logString.arg("Info"));
-            break;
+    case QtDebugMsg:
+        logDebugCrash.append(logString.arg("Debug"));
+        break;
+    case QtCriticalMsg:
+        logDebugCrash.append(logString.arg("Critical"));
+        *log << logString.arg("Critical");
+        logBuffer.append(logString.arg("Critical"));
+        break;
+    case QtWarningMsg:
+        logDebugCrash.append(logString.arg("Warning"));
+        *log << logString.arg("Warning");
+        logBuffer.append(logString.arg("Warning"));
+        break;
+    case QtFatalMsg:
+        logDebugCrash.append(logString.arg("Fatal"));
+        *log << logString.arg("Fatal");
+        *log << "\n";
+        log->flush();
+#ifndef QUSB2SNES_NOGUI
+        QMessageBox::critical(nullptr, QObject::tr("Critical error"), msg);
+#else
+        fprintf(stderr, "Critical error :%s\n", msg.toLatin1().constData());
+#endif
+        qApp->exit(1);
+        break;
+    case QtInfoMsg:
+        logDebugCrash.append(logString.arg("Info"));
+        *log << logString.arg("Info");
+        logBuffer.append(logString.arg("Info"));
+        break;
     }
     if (debugLogFile.device() != nullptr)
     {
@@ -181,7 +176,8 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     {
         *log << "\n";
         logBuffer.append("\n");
-        if (logCounter == MAX_LINE_LOG) {
+        if (logCounter == MAX_LINE_LOG)
+        {
             logCounter = 0;
             refToLogFile->resize(0);
             *log << logBuffer;
@@ -196,8 +192,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 #endif
 }
 
-
-void    startServer()
+void startServer()
 {
     quint16 port = 8080;
     QHostAddress addr(QHostAddress::Any);
@@ -225,40 +220,20 @@ int main(int ac, char *ag[])
     QCoreApplication app(ac, ag);
 #endif
 #ifdef Q_OS_WIN
-    QFile   mlog(qApp->applicationDirPath() + "/log.txt");
-    QFile   mDebugLog(qApp->applicationDirPath() + "/log-debug.txt");
-    //QString crashFileQPath = qApp->applicationDirPath() + "/crash-log.txt";
-    //QByteArray bacf = crashFileQPath.toLocal8Bit();
-    //char* crashFilePath = bacf.data();
+    QFile mlog(qApp->applicationDirPath() + "/log.txt");
+    QFile mDebugLog(qApp->applicationDirPath() + "/log-debug.txt");
+    // QString crashFileQPath = qApp->applicationDirPath() + "/crash-log.txt";
+    // QByteArray bacf = crashFileQPath.toLocal8Bit();
+    // char* crashFilePath = bacf.data();
 
 #else
     const QString appDataPath = QStandardPaths::standardLocations(QStandardPaths::AppDataLocation).at(0);
     if (!QFile::exists(appDataPath))
         QDir().mkdir(appDataPath);
-    QFile   mlog(appDataPath + "/log.txt");
-    QFile   mDebugLog(appDataPath + "/log-debug.txt");
+    QFile mlog(appDataPath + "/log.txt");
+    QFile mDebugLog(appDataPath + "/log-debug.txt");
 #endif
 
-    //std::filebuf crashFile;
-#ifndef Q_OS_WIN
-    globalSettings = new QSettings("skarsnik.nyo.fr", "QUsb2Snes");
-#else
-    globalSettings = new QSettings("config.ini", QSettings::IniFormat);
-#endif
-    if (globalSettings->contains("debugLog") && globalSettings->value("debugLog").toBool())
-    {
-        mDebugLog.open(QIODevice::WriteOnly | QIODevice::Text);
-        debugLogFile.setDevice(&mDebugLog);
-
-        /*crashFile.open(crashFilePath, std::ios::out);
-        stdLogStream = new std::ostream(&crashFile);*/
-    }
-    if (mlog.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        logfile.setDevice(&mlog);
-        refToLogFile = &mlog;
-        qInstallMessageHandler(myMessageOutput);
-    }
     app.setApplicationName("QUsb2Snes");
     // This is only defined in the PRO file
 #ifdef GIT_TAG_VERSION
@@ -276,6 +251,8 @@ int main(int ac, char *ag[])
     qInfo() << "Runing QUsb2Snes version " << qApp->applicationVersion();
     qInfo() << "Compiled against Qt" << QT_VERSION_STR << ", running" << qVersion();
     // let set some know trusted domain
+    wsServer.addTrusted("http://localhost");
+    wsServer.addTrusted("http://127.0.0.1");
     wsServer.addTrusted("http://www.multitroid.com");
     wsServer.addTrusted("http://multitroid.com");
     wsServer.addTrusted("https://multiworld.samus.link/");
@@ -285,80 +262,130 @@ int main(int ac, char *ag[])
     QLoggingCategory::setFilterRules("EmuNWAccessClient.debug=true\n");
 
 #ifndef QUSB2SNES_NOGUI
-    AppUi*  appUi = new AppUi();
+    AppUi *appUi = new AppUi();
     int updatedIndex = app.arguments().indexOf("-updated");
     if (updatedIndex != -1)
         appUi->updated(app.arguments().at(updatedIndex + 1));
     appUi->sysTray->show();
 #else
-   QCommandLineParser parser;
-   parser.setApplicationDescription("QUsb2Snes");
-   parser.addHelpOption();
-   //parser.addVersionOption();
+    QCommandLineParser parser;
+    parser.setApplicationDescription("QUsb2Snes");
+    parser.addHelpOption();
+    // parser.addVersionOption();
 
-   QCommandLineOption showVersionInfo(QStringList() << "v" << "version", 
-                                      QCoreApplication::translate("main", "Print version info and exit"));
-   parser.addOption(showVersionInfo);
+    QCommandLineOption configFile(QStringList() << "c"
+                                                << "config",
+                                  QCoreApplication::translate("main", "Config file (Default: 'QUsb2Snes')"),
+                                  "config",
+                                  "QUsb2Snes");
+    parser.addOption(configFile);
 
-   QCommandLineOption alternatePort(QStringList() << "p" << "port", 
-                                    QCoreApplication::translate("main", "Alternate port to use (Default: 8080)"), 
-                                    "8080");
-   parser.addOption(alternatePort);
+    QCommandLineOption debugEnable(QStringList() << "debug",
+                                   QCoreApplication::translate("main", "Activate debug log."));
+    parser.addOption(debugEnable);
 
-   QCommandLineOption retroArchHostOption(QStringList()  << "retroarchhost", 
-                                    QCoreApplication::translate("main", "Retroarch Host (Default: 127.0.0.1:55355)"), 
-                                    "127.0.0.1:55355");
-   parser.addOption(retroArchHostOption);
+    QCommandLineOption showVersionInfo(QStringList() << "v"
+                                                     << "version",
+                                       QCoreApplication::translate("main", "Print version info and exit"));
+    parser.addOption(showVersionInfo);
 
-   parser.process(app);
+    QCommandLineOption alternatePort(QStringList() << "p"
+                                                   << "port",
+                                     QCoreApplication::translate("main", "Alternate port to use (Default: 8080)"),
+                                     "port");
+    parser.addOption(alternatePort);
 
-   //qDebug() << parser.values(showVersionInfo);
-   //qDebug() << parser.value(alternatePort);
+    QCommandLineOption retroArchHostOption(QStringList() << "retroarchhost",
+                                           QCoreApplication::translate("main", "Retroarch Host (Default: 127.0.0.1:55355)"),
+                                           "retroarchhost");
+    parser.addOption(retroArchHostOption);
 
+    QCommandLineOption sd2SnesEnable(QStringList() << "sd2snes",
+                                     QCoreApplication::translate("main", "Activate sd2snes support."));
+    parser.addOption(sd2SnesEnable);
 
-   //if (app.arguments().contains("--version"))
-   if (parser.isSet(showVersionInfo))
-   {
+    QCommandLineOption luaBridgeEnable(QStringList() << "luabridge",
+                                       QCoreApplication::translate("main", "Activate lua bridge support."));
+    parser.addOption(luaBridgeEnable);
+
+    QCommandLineOption retroArchEnable(QStringList() << "retroarch",
+                                       QCoreApplication::translate("main", "Activate retroarch support."));
+    parser.addOption(retroArchEnable);
+
+    QCommandLineOption snesClassicEnable(QStringList() << "snesclassic",
+                                         QCoreApplication::translate("main", "Activate snesclassic support."));
+    parser.addOption(snesClassicEnable);
+
+    parser.process(app);
+
+    // std::filebuf crashFile;
+#ifndef Q_OS_WIN
+    globalSettings = new QSettings("skarsnik.nyo.fr", parser.value(configFile));
+#else
+    globalSettings = new QSettings("config.ini", QSettings::IniFormat);
+#endif
+    if (parser.isSet(debugEnable) || (globalSettings->contains("debugLog") && globalSettings->value("debugLog").toBool()))
+    {
+        mDebugLog.open(QIODevice::WriteOnly | QIODevice::Text);
+        debugLogFile.setDevice(&mDebugLog);
+
+        /*crashFile.open(crashFilePath, std::ios::out);
+        stdLogStream = new std::ostream(&crashFile);*/
+    }
+    if (mlog.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        logfile.setDevice(&mlog);
+        refToLogFile = &mlog;
+        qInstallMessageHandler(myMessageOutput);
+    }
+
+    // qDebug() << parser.values(showVersionInfo);
+    // qDebug() << parser.value(alternatePort);
+
+    // if (app.arguments().contains("--version"))
+    if (parser.isSet(showVersionInfo))
+    {
         fprintf(stdout, "QUsb2Snes version : %s\n", app.applicationVersion().toLocal8Bit().constData());
         return 0;
-   }
-   if (parser.isSet(retroArchHostOption))
-   {
+    }
+    if (parser.isSet(retroArchHostOption))
+    {
         globalSettings->setValue("RetroArchHost", parser.value(retroArchHostOption));
-   }
-   if (parser.isSet(alternatePort))
-   {
-        //qDebug() << parser.value(alternatePort);
+    }
+    if (parser.isSet(alternatePort))
+    {
+        // qDebug() << parser.value(alternatePort);
         globalSettings->setValue("port", parser.value(alternatePort));
-   }
-   if (globalSettings->value("sd2snessupport").toBool() || app.arguments().contains("-sd2snes"))
-   {
-       SD2SnesFactory* sd2snesFactory = new SD2SnesFactory();
-       wsServer.addDeviceFactory(sd2snesFactory);
-   }
-   if (globalSettings->value("retroarchdevice").toBool() || app.arguments().contains("-retroarch"))
-   {
-       RetroArchFactory* retroarchFactory = new RetroArchFactory();
-       wsServer.addDeviceFactory(retroarchFactory);
-   }
-   if (globalSettings->value("luabridge").toBool() || app.arguments().contains("-luabridge"))
-   {
-       LuaBridge* luaBridge = new LuaBridge();
-       wsServer.addDeviceFactory(luaBridge);
-   }
-   if (globalSettings->value("snesclassic").toBool() || app.arguments().contains("-snesclassic"))
-   {
-       SNESClassicFactory* snesClassic = new SNESClassicFactory();
-       wsServer.addDeviceFactory(snesClassic);
-   }
-   if (globalSettings->value("emunwaccess").toBool() || app.arguments().contains("-emunwaccess"))
-   {
-       EmuNetworkAccessFactory* emunwf = new EmuNetworkAccessFactory();
-       wsServer.addDeviceFactory(emunwf);
-   }
-   QObject::connect(&wsServer, &WSServer::listenFailed, [=](const QString& err) {
-   });
-   QTimer::singleShot(100, &startServer);
+    }
+
+    if (globalSettings->value("retroarchdevice").toBool() || parser.isSet(retroArchEnable))
+    {
+        RetroArchFactory *retroarchFactory = new RetroArchFactory();
+        wsServer.addDeviceFactory(retroarchFactory);
+    }
+
+    if (globalSettings->value("sd2snessupport").toBool() || parser.isSet(sd2SnesEnable))
+    {
+        SD2SnesFactory *sd2snesFactory = new SD2SnesFactory();
+        wsServer.addDeviceFactory(sd2snesFactory);
+    }
+    if (globalSettings->value("luabridge").toBool() || parser.isSet(luaBridgeEnable))
+    {
+        LuaBridge *luaBridge = new LuaBridge();
+        wsServer.addDeviceFactory(luaBridge);
+    }
+    if (globalSettings->value("snesclassic").toBool() || parser.isSet(snesClassicEnable))
+    {
+        SNESClassicFactory *snesClassic = new SNESClassicFactory();
+        wsServer.addDeviceFactory(snesClassic);
+    }
+    if (globalSettings->value("emunwaccess").toBool() || app.arguments().contains("-emunwaccess"))
+    {
+        EmuNetworkAccessFactory *emunwf = new EmuNetworkAccessFactory();
+        wsServer.addDeviceFactory(emunwf);
+    }
+    QObject::connect(&wsServer, &WSServer::listenFailed, [=](const QString &err) {});
+    QTimer::singleShot(100, &startServer);
 #endif
     return app.exec();
 }
